@@ -21,9 +21,15 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "saved", "best_model.h5")
 SCALER_PATH = os.path.join(BASE_DIR, "models", "saved", "temperature_scaler.pkl")
 
+print("=" * 60)
+print("CURRENT WORKING DIRECTORY:", os.getcwd())
 print("BASE_DIR:", BASE_DIR)
 print("MODEL_PATH:", MODEL_PATH)
+print("SCALER_PATH:", SCALER_PATH)
 print("MODEL EXISTS:", os.path.exists(MODEL_PATH))
+print("SCALER EXISTS:", os.path.exists(SCALER_PATH))
+print("=" * 60)
+
 sys.path.append(BASE_DIR)
 
 import yt_dlp
