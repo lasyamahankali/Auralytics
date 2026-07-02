@@ -643,29 +643,23 @@ with tab_chat:
 
         st.markdown("### 🎤 Voice Input")
 
-        class AudioProcessor(AudioProcessorBase):
-            def __init__(self):
-                self.audio_frames = []
+        audio = None
 
-            def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
-                self.audio_frames.append(frame.to_ndarray())
-                return frame
+        if st.session_state.chat_input_mode == "mic":
 
-if st.session_state.chat_input_mode == "mic":
+            audio = mic_recorder(
+                start_prompt="🎤 Start Recording",
+                stop_prompt="⏹ Stop",
+                just_once=True,
+                use_container_width=True,
+                key="chat_mic",
+            )
 
-    audio = mic_recorder(
-        start_prompt="🎤 Start Recording",
-        stop_prompt="⏹ Stop",
-        just_once=True,
-        use_container_width=True,
-        key="chat_mic",
-    )
+        if audio is not None:
 
-    if audio is not None:
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
-            tmp.write(audio["bytes"])
-            audio_path = tmp.name
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+                tmp.write(audio["bytes"])
+                audio_path = tmp.name
 
         # Play back the user's recording
         st.audio(audio_path)
