@@ -55,8 +55,8 @@ from chatbot import (
 )
 
 # ───────────────── CONFIG ─────────────────
-st.set_page_config
-print("APP STARTED")(
+print("APP STARTED")
+st.set_page_config(
     page_title="Auralytics",
     page_icon="🎙️",
     layout="wide",
@@ -68,7 +68,7 @@ EMOTION_EMOJI = {
     'Angry':'😠', 'Fearful':'😨', 'Disgust':'🤢', 'Surprised':'😲'
 }
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "saved", "best_model.h5")
 SCALER_PATH = os.path.join(BASE_DIR, "models", "saved", "temperature_scaler.pkl")
 SR = 22050
