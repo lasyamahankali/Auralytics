@@ -17,7 +17,7 @@ What you get:
 
 import os, sys, tempfile
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "saved", "best_model.h5")
 SCALER_PATH = os.path.join(BASE_DIR, "models", "saved", "temperature_scaler.pkl")
 
@@ -567,7 +567,7 @@ with tab_chat:
     st.markdown("---")
 
     # Always show chat history first
-    for msg in st.session_state.chat_history:
+    for idx, msg in enumerate(st.session_state.chat_history):
         if msg["role"] == "user":
             st.markdown(
                 f'<div class="chat-user"><b>You:</b> {msg["content"]}</div>',
@@ -587,7 +587,7 @@ with tab_chat:
                 # Show the replay button only if voice reply is enabled
                 if st.session_state.voice_reply:
                     # Unique key prevents Streamlit errors
-                    btn_key = f"replay_{hash(msg['content'])}"
+                    btn_key = f"replay_{idx}"
                     if st.button("🔈", key=btn_key, help="Replay this message"):
                         audio_bytes, _ = tts_to_mp3_bytes(msg["content"])
                         if audio_bytes:
