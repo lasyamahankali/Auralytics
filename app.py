@@ -610,14 +610,14 @@ with tab_chat:
             )
         
         
-            if not st.session_state.last_ser:
                 det_emo, det_inten = get_detected_text_emotion()
+                
                 st.session_state.last_ser = {
                     "emotion": det_emo,
                     "intensity": det_inten,
                     "suggestions": get_suggestions(det_emo, det_inten, "stable"),
                     "songs": get_song_recos(det_emo)
-            }
+                }
             
             # Append bot reply
             st.session_state.chat_history.append({"role": "assistant", "content": response})
