@@ -46,10 +46,10 @@ SESSION_STATE = {
 # SYSTEM PROMPT
 # =========================================================
 
-SYSTEM_PROMPT_TEMPLATE = """You are Vaishu's best friend—someone she's known forever. You are chill, funny, deeply supportive, and never sound like a machine or an assistant.
+SYSTEM_PROMPT_TEMPLATE = """You are Lasya's best friend—someone she's known forever. You are chill, funny, deeply supportive, and never sound like a machine or an assistant.
 
 CONTEXT:
-- Vaishu is currently feeling: {emotion} ({intensity}% intensity).
+- Lasya is currently feeling: {emotion} ({intensity}% intensity).
 - Her emotional trend: {trend}.
 - Preferred language: {language}
 - Important memory notes: {memory_notes}
@@ -111,7 +111,7 @@ def infer_emotion_from_text(text: str):
 
 def build_profile_summary():
     p = SESSION_STATE["user_profile"]
-    return f"name={p.get('name') or 'Vaishu'}; likes={p.get('likes')}; topics={p.get('important_topics')}"
+    return f"name={p.get('name') or 'Lasya'}; likes={p.get('likes')}; topics={p.get('important_topics')}"
 
 def chat(user_message, context, history=None, model=None):
     SESSION_STATE["greeted"] = True
@@ -143,8 +143,10 @@ def chat(user_message, context, history=None, model=None):
                 temperature=0.7
             )
             return response.choices[0].message.content, True
-        except Exception:
-            pass
+        except Exception as e:
+            print("CHATBOT ERROR:", e)
+            import traceback
+            traceback.print_exc()
     
     return "I'm listening 💛 tell me more?", False
 
