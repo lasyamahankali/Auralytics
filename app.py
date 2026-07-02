@@ -18,6 +18,12 @@ What you get:
 import os, sys, tempfile
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_PATH = os.path.join(BASE_DIR, "models", "saved", "best_model.h5")
+SCALER_PATH = os.path.join(BASE_DIR, "models", "saved", "temperature_scaler.pkl")
+
+print("BASE_DIR:", BASE_DIR)
+print("MODEL_PATH:", MODEL_PATH)
+print("MODEL EXISTS:", os.path.exists(MODEL_PATH))
 sys.path.append(BASE_DIR)
 
 import yt_dlp
@@ -31,6 +37,7 @@ import soundfile as sf
 import tensorflow as tf
 import keras
 from faster_whisper import WhisperModel
+print("STEP 5")
 import moviepy as mp   
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from utils.feature_extraction import extract_features
@@ -48,7 +55,8 @@ from chatbot import (
 )
 
 # ───────────────── CONFIG ─────────────────
-st.set_page_config(
+st.set_page_config
+print("APP STARTED")(
     page_title="Auralytics",
     page_icon="🎙️",
     layout="wide",
@@ -192,11 +200,10 @@ def load_scaler():
 # ───────────────── SPEECH-TO-TEXT MODEL ─────────────────
 @st.cache_resource
 def load_whisper_model():
-    """
-    Loads faster-whisper speech recognition model.
-    This converts user voice into text for chatbot understanding.
-    """
-    return WhisperModel("base")
+    print("Loading Whisper...")
+    model = WhisperModel("base")
+    print("Whisper loaded")
+    return model
 
 def speech_to_text(audio_path):
     """
@@ -356,8 +363,13 @@ if "username" not in st.session_state:
 
 
 # ───────────────── LOAD MODEL ─────────────────
+print("STEP 1")
 model = load_ser_model()
+print("STEP 2")
+
+print("STEP 3")
 scaler = load_scaler()
+print("STEP 4")
 
 if model is None:
     st.error(f"Model not found. Make sure this exists: {MODEL_PATH}")
