@@ -650,7 +650,17 @@ with tab_chat:
             webrtc_ctx = webrtc_streamer(
                 key="mic",
                 audio_processor_factory=AudioProcessor,
-                media_stream_constraints={"audio": True, "video": False},
+                media_stream_constraints={
+                    "audio": True,
+                    "video": False,
+                },
+                rtc_configuration={
+                    "iceServers": [
+                        {
+                            "urls": ["stun:stun.l.google.com:19302"]
+                        }
+                    ]
+                },
             )
 
         if webrtc_ctx.audio_processor and st.button("Process Voice"):
@@ -698,6 +708,8 @@ with tab_chat:
     # 3) UPLOAD AUDIO 
     elif mode == "audio":
         st.markdown("### 📂 Upload Audio File")
+    up = None
+
     if st.session_state.chat_input_mode == "audio":
         up = st.file_uploader(
             "Upload audio",

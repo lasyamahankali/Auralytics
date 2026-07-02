@@ -21,6 +21,10 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 DEFAULT_MODEL = "llama-3.3-70b-versatile"
 
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+print("=" * 50)
+print("GROQ_API_KEY FOUND:", GROQ_API_KEY is not None)
+print("CLIENT CREATED:", client is not None)
+print("=" * 50)
 
 EMOTION_DETECTION_TURNS = 3
 
@@ -144,9 +148,12 @@ def chat(user_message, context, history=None, model=None):
             )
             return response.choices[0].message.content, True
         except Exception as e:
-            print("CHATBOT ERROR:", e)
+            print("=" * 50)
+            print("GROQ API ERROR")
+            print(e)
             import traceback
             traceback.print_exc()
+            print("=" * 50)
     
     return "I'm listening 💛 tell me more?", False
 
