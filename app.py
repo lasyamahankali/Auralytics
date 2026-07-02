@@ -537,13 +537,6 @@ with tab_chat:
         and st.session_state.chat_history[0]["role"] == "assistant"
     )
 
-    if only_greeting_present:
-        st.markdown("""
-        <div class="center-hero">
-          <h1>Auralytics</h1>
-          <p>Ready for you all the time and I am listening.</p>
-        </div>
-        """, unsafe_allow_html=True)
 
     st.markdown("#### Choose how you want to talk:")
     c1, c2, c3 = st.columns(3)
@@ -596,8 +589,8 @@ with tab_chat:
     
 
     # 1) TEXT
-    if mode == "text":
-        user_input = st.chat_input("Type here…")
+    if st.session_state.chat_input_mode == "text":
+        user_input = st.chat_input("Type your message...")
         
         if user_input:
             st.session_state.chat_started = True
@@ -653,11 +646,12 @@ with tab_chat:
                 self.audio_frames.append(frame.to_ndarray())
                 return frame
 
-        webrtc_ctx = webrtc_streamer(
-            key="mic",
-            audio_processor_factory=AudioProcessor,
-            media_stream_constraints={"audio": True, "video": False},
-        )
+        if st.session_state.chat_input_mode == "mic":
+            webrtc_ctx = webrtc_streamer(
+                key="mic",
+                audio_processor_factory=AudioProcessor,
+                media_stream_constraints={"audio": True, "video": False},
+            )
 
         if webrtc_ctx.audio_processor and st.button("Process Voice"):
 
@@ -704,10 +698,11 @@ with tab_chat:
     # 3) UPLOAD AUDIO 
     elif mode == "audio":
         st.markdown("### 📂 Upload Audio File")
-    up = st.file_uploader(
-        "Upload audio",
-        type=["wav", "mp3", "m4a"],
-        key="chat_upload"
+    if st.session_state.chat_input_mode == "audio":
+        up = st.file_uploader(
+            "Upload audio",
+            type=["wav", "mp3", "m4a"],
+            key="chat_upload"
         )
         
     if up:
