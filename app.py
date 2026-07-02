@@ -35,7 +35,6 @@ sys.path.append(BASE_DIR)
 import yt_dlp
 
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, AudioProcessorBase
 import av
 import numpy as np
 import librosa
@@ -652,63 +651,101 @@ with tab_chat:
                 self.audio_frames.append(frame.to_ndarray())
                 return frame
 
-        if st.session_state.chat_input_mode == "mic":
-            webrtc_ctx = webrtc_streamer(
-                key="mic",
-                audio_processor_factory=AudioProcessor,
-                media_stream_constraints={
-                    "audio": True,
-                    "video": False,
-                },
-                rtc_configuration={
-                    "iceServers": [
-                        {
-                            "urls": ["stun:stun.l.google.com:19302"]
-                        }
-                    ]
-                },
+if st.session_state.chat_input_mode == "mic":
+
+    audio = mic_recorder(
+        start_prompt="🎤 Start Recording",
+        stop_prompt="⏹ Stop",
+        just_once=True,
+        use_container_width=True,
+        key="chat_mic",
+    )
+
+    if audio is not None:
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+            tmp.write(audio["bytes"])
+            audio_path = tmp.name
+
+        # Play back the user's recording
+        st.audio(audio_path)
+
+        # Load for SER
+        audio_data, audio_sr = librosa.load(audio_path, sr=SR)
+
+        # Emotion prediction
+        emotion, intensity, probs, pred_class = predict_emotion_from_audio(
+            audio_data,
+            audio_sr,
+            model,
+            scaler
+        )
+
+        timeline_results = analyze_timeline(
+            audio_data,
+            audio_sr,
+            model,
+            lambda a, s: extract_features(
+                a,
+                s,
+                feature_type=FEATURE_TYPE_FIXED
+            ),
+            scaler
+        )
+
+        summary = get_timeline_summary(timeline_results)
+
+        fig = None
+        if timeline_results:
+            fig = safe_plot_timeline(
+                timeline_results,
+                overall_emotion=emotion
             )
 
-        if webrtc_ctx.audio_processor and st.button("Process Voice"):
+        st.session_state.last_ser = {
+            "emotion": emotion,
+            "intensity": intensity,
+            "summary": summary,
+            "timeline_fig": fig,
+            "suggestions": get_suggestions(
+                emotion,
+                intensity,
+                summary.get("intensity_trend", "stable")
+            ),
+            "songs": get_song_recos(emotion)
+        }
 
-            frames = webrtc_ctx.audio_processor.audio_frames
+        # Speech-to-text
+        user_text = speech_to_text(audio_path)
 
-            if not frames:
-                st.warning("No audio recorded")
-                st.stop()
+        if user_text.strip():
 
-            audio_data = np.concatenate(frames, axis=1)
+            st.session_state.chat_history.append({
+                "role": "user",
+                "content": f"🎤 {user_text}"
+            })
 
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
-                sf.write(tmp.name, audio_data.T, SR)
-                audio_path = tmp.name
+            with st.spinner("Thinking... 🤖"):
+                response, _ = chat(
+                    user_text,
+                    st.session_state.last_ser,
+                    st.session_state.chat_history
+                )
 
-            user_text = speech_to_text(audio_path)
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": response
+            })
 
-            if user_text and user_text.strip() != "":
-                st.session_state.chat_history.append({
-                    "role": "user",
-                    "content": f"🎤 {user_text}"
-                })
+            if st.session_state.voice_reply:
+                audio_bytes, err = tts_to_mp3_bytes(response)
+                if not err:
+                    st.audio(audio_bytes, format="audio/mp3", autoplay=True)
 
-                with st.spinner("Thinking... 🤖"):
-                    response, _ = chat(user_text, ctx, st.session_state.chat_history)
+            st.rerun()
 
-                st.session_state.chat_history.append({
-                    "role": "assistant",
-                    "content": response
-                })
-
-                if st.session_state.voice_reply:
-                    audio_bytes, err = tts_to_mp3_bytes(response)
-                    if not err:
-                        st.session_state.last_audio = audio_bytes
-                    else:
-                        st.error(f"Voice generation failed: {err}")
-
-                st.rerun()
-            else:
-                st.warning("Couldn't detect clear speech. Try again 🎧")
+        else:
+            st.warning("Couldn't detect clear speech.")
 
 
     # 3) UPLOAD AUDIO 
