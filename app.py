@@ -35,6 +35,7 @@ sys.path.append(BASE_DIR)
 import yt_dlp
 
 import streamlit as st
+from streamlit_mic_recorder import mic_recorder
 import av
 import numpy as np
 import librosa
