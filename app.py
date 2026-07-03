@@ -646,21 +646,21 @@ with tab_chat:
 
         audio = None
 
-        if st.session_state.chat_input_mode == "mic":
+    if st.session_state.chat_input_mode == "mic":
 
-            audio = mic_recorder(
-                start_prompt="🎤 Start Recording",
-                stop_prompt="⏹ Stop",
-                just_once=True,
-                use_container_width=True,
-                key="chat_mic",
-            )
+        audio = mic_recorder(
+            start_prompt="🎤 Start Recording",
+            stop_prompt="⏹ Stop",
+            just_once=True,
+            use_container_width=True,
+            key="chat_mic",
+        )
 
-        if audio is not None:
+    if audio is not None:
 
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
-                tmp.write(audio["bytes"])
-                audio_path = tmp.name
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+            tmp.write(audio["bytes"])
+            audio_path = tmp.name
 
         # Play back the user's recording
         st.audio(audio_path)
@@ -676,6 +676,7 @@ with tab_chat:
             scaler
         )
 
+        # ...and ALL the rest of your processing code...
         timeline_results = analyze_timeline(
             audio_data,
             audio_sr,
