@@ -646,102 +646,102 @@ with tab_chat:
 
         audio = None
 
-    if st.session_state.chat_input_mode == "mic":
+        if st.session_state.chat_input_mode == "mic":
 
-        audio = mic_recorder(
-            start_prompt="🎤 Start Recording",
-            stop_prompt="⏹ Stop",
-            just_once=True,
-            use_container_width=True,
-            key="chat_mic",
-        )
-
-    if audio is not None:
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
-            tmp.write(audio["bytes"])
-            audio_path = tmp.name
-
-        # Play back the user's recording
-        st.audio(audio_path)
-
-        # Load for SER
-        audio_data, audio_sr = librosa.load(audio_path, sr=SR)
-
-        # Emotion prediction
-        emotion, intensity, probs, pred_class = predict_emotion_from_audio(
-            audio_data,
-            audio_sr,
-            model,
-            scaler
-        )
-
-        # ...and ALL the rest of your processing code...
-        timeline_results = analyze_timeline(
-            audio_data,
-            audio_sr,
-            model,
-            lambda a, s: extract_features(
-                a,
-                s,
-                feature_type=FEATURE_TYPE_FIXED
-            ),
-            scaler
-        )
-
-        summary = get_timeline_summary(timeline_results)
-
-        fig = None
-        if timeline_results:
-            fig = safe_plot_timeline(
-                timeline_results,
-                overall_emotion=emotion
+            audio = mic_recorder(
+                start_prompt="🎤 Start Recording",
+                stop_prompt="⏹ Stop",
+                just_once=True,
+                use_container_width=True,
+                key="chat_mic",
             )
 
-        st.session_state.last_ser = {
-            "emotion": emotion,
-            "intensity": intensity,
-            "summary": summary,
-            "timeline_fig": fig,
-            "suggestions": get_suggestions(
-                emotion,
-                intensity,
-                summary.get("intensity_trend", "stable")
-            ),
-            "songs": get_song_recos(emotion)
-        }
+            if audio is not None:
 
-        # Speech-to-text
-        user_text = speech_to_text(audio_path)
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+                    tmp.write(audio["bytes"])
+                    audio_path = tmp.name
 
-        if user_text.strip():
+                # Play back the user's recording
+                st.audio(audio_path)
 
-            st.session_state.chat_history.append({
-                "role": "user",
-                "content": f"🎤 {user_text}"
-            })
+                # Load for SER
+                audio_data, audio_sr = librosa.load(audio_path, sr=SR)
 
-            with st.spinner("Thinking... 🤖"):
-                response, _ = chat(
-                    user_text,
-                    st.session_state.last_ser,
-                    st.session_state.chat_history
+                # Emotion prediction
+                emotion, intensity, probs, pred_class = predict_emotion_from_audio(
+                    audio_data,
+                    audio_sr,
+                    model,
+                    scaler
                 )
 
-            st.session_state.chat_history.append({
-                "role": "assistant",
-                "content": response
-            })
+                # ...and ALL the rest of your processing code...
+                timeline_results = analyze_timeline(
+                    audio_data,
+                    audio_sr,
+                    model,
+                    lambda a, s: extract_features(
+                        a,
+                        s,
+                        feature_type=FEATURE_TYPE_FIXED
+                    ),
+                    scaler
+                )
 
-            if st.session_state.voice_reply:
-                audio_bytes, err = tts_to_mp3_bytes(response)
-                if not err:
-                    st.audio(audio_bytes, format="audio/mp3", autoplay=True)
+                summary = get_timeline_summary(timeline_results)
 
-            st.rerun()
+                fig = None
+                if timeline_results:
+                    fig = safe_plot_timeline(
+                        timeline_results,
+                        overall_emotion=emotion
+                    )
 
-        else:
-            st.warning("Couldn't detect clear speech.")
+                st.session_state.last_ser = {
+                    "emotion": emotion,
+                    "intensity": intensity,
+                    "summary": summary,
+                    "timeline_fig": fig,
+                    "suggestions": get_suggestions(
+                    emotion,
+                    intensity,
+                    summary.get("intensity_trend", "stable")
+                ),
+                "songs": get_song_recos(emotion)
+            }
+
+            # Speech-to-text
+            user_text = speech_to_text(audio_path)
+
+            if user_text.strip():
+
+                st.session_state.chat_history.append({
+                    "role": "user",
+                    "content": f"🎤 {user_text}"
+                })
+
+                with st.spinner("Thinking... 🤖"):
+                    response, _ = chat(
+                        user_text,
+                        st.session_state.last_ser,
+                        st.session_state.chat_history
+                    )
+
+                st.session_state.chat_history.append({
+                    "role": "assistant",
+                    "content": response
+                })
+
+                if st.session_state.voice_reply:
+                    audio_bytes, err = tts_to_mp3_bytes(response)
+                    if not err:
+                        st.audio(audio_bytes, format="audio/mp3", autoplay=True)
+
+                st.rerun()
+
+            else:
+                st.warning("Couldn't detect clear speech.")
 
 
     # 3) UPLOAD AUDIO 
